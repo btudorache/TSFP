@@ -16,11 +16,9 @@ eval expr@(Var x) context = (M.findWithDefault expr x context, context)
 eval expr@(Lambda x e) context = (expr, context)
 eval expr@(Def x e) context = (e, (M.insert x e context))
 
--- reduce rule
-eval expr@(Application (Lambda x e1) e2@(Var _)) context = (subst x e2 e1, context)
 eval expr@(Application (Lambda x e1) e2@(Lambda _ _)) context = (subst x e2 e1, context)
--- eval rule1
-eval expr@(Application e1@(Var _) e2) context = ((Application (fst (eval e1 context)) e2), context)
--- eval expr@(Application e1@(Lambda _ _) e2) context = ((Application (fst (eval e1 context)) e2), context)
--- eval rule2
-eval expr@(Application e1@(Lambda _ _) e2) context = ((Application e1 (fst (eval e2 context))), context)
+
+eval expr@(Application e1@(Lambda _ _) e2) context = (Application e1 evalExpr, evalCtx)
+    where (evalExpr, evalCtx) = eval e2 context
+
+eval expr@(Application e1 e2) context = ((Application (fst (eval e1 context)) e2), context)
